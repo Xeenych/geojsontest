@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8' />
+    <title>Хребтовки Цветкова Алексея. Джунгарский алатау. Центральный Тянь-Шань.</title>
+    
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-10703828-4"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'UA-10703828-4');
+    </script>
+
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" crossorigin=""></script>
+    <script src="./leaflet-hash.js"></script>
+    <script src="./leaflet.ajax.min.js"></script>
+    <style>
+        body { margin:0; padding:0; }
+        #map { position:absolute; top:0; bottom:0; width:100%; }
+        .photo {object-fit: cover;}
+    </style>
+</head>
+
+<body>
+	<div id='map'></div>  
+	<script> 
+	var pass_json = "https://raw.githubusercontent.com/Xeenych/geojsontest/master/test2.geojson";
+    var url_prerfix = "http://pereval.g-utka.ru/doku.php/playground/pass/"
+    var img_prefix = "http://pereval.g-utka.ru"
+    var img_suffix = "";
+
+	var mymap = L.map('map').setView([42.0, 77.5], 10); 
+ 	var hash = new L.Hash(mymap);
+	L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+	maxZoom: 17,
+	attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+}).addTo(mymap);
+
+	var myattribution = "<a href = 'http://pereval.g-utka.ru' target='_blank'> Перечень перевалов на http://pereval.g-utka.ru <a>";	
+	mymap.attributionControl.setPrefix(myattribution);
+
+	
+	function myclick(e, feature) {
+		window.location = img_prefix + feature.properties.pageid;
+	}
+
+	function mycontent(feature) {
+		var content = '<div>'+ feature.properties.name + '</div>' + 
+                    '<div>'+ feature.properties.othername + '</div>' +
+                    '<div>'+ feature.properties.number + '</div>' +
+                    '<div>'+ feature.properties.cat + '</div>' +
+                    '<div>'+ feature.properties.height + '</div>' +
+                    '<div>'+ feature.properties.har + '</div>' +
+                    '<div>'+ feature.properties.soedin + '</div>' +
+                    '<div>'+ feature.properties.leader + '</div>' +
+                    '<div>'+ feature.properties.comment + '</div>';
+        return content
+	}
+	
+	function CreateMarker (feature, latlng, style) {
+		var marker = L.circleMarker(latlng, style);
+		marker.on('click', function(e) { myclick(e, feature); })
+		marker.bindPopup(mycontent(feature));
+        marker.on('mouseover', function (e) {
+            this.openPopup();
+        });
+        marker.on('mouseout', function (e) {
+            this.closePopup();
+        });
+		return marker;
+	}
+
+
+	var style_no = { radius: 6, fillColor: "#ffffff", color: "#000", weight: 1, opacity: 0.8, fillOpacity: 0.8 };
+	var style_NK = { radius: 6,	fillColor: "#808080", color: "#000", weight: 1, opacity: 0.8, fillOpacity: 0.8 };
+	var style_1A = { radius: 6,	fillColor: "#00ffff", color: "#000", weight: 1, opacity: 0.8, fillOpacity: 0.8 };
+	var style_1B = { radius: 6,	fillColor: "#0000ff", color: "#000", weight: 1, opacity: 0.8, fillOpacity: 0.8 };
+	var style_2A = { radius: 6,	fillColor: "#00ff00", color: "#000", weight: 1, opacity: 0.8, fillOpacity: 0.8 };
+	var style_2B = { radius: 6,	fillColor: "#008000", color: "#000", weight: 1, opacity: 0.8, fillOpacity: 0.8 };
+	var style_3A = { radius: 6,	fillColor: "#ff8000", color: "#000", weight: 1, opacity: 0.8, fillOpacity: 0.8 };
+	var style_3B = { radius: 6,	fillColor: "#ff0000", color: "#000", weight: 1, opacity: 0.8, fillOpacity: 0.8 };
+
+	function PassStyler(feature, latlng) {
+		switch (feature.properties.cat) {
+			case 'н/к': return CreateMarker(feature, latlng, style_NK); 
+			case '1А': return CreateMarker(feature, latlng, style_1A);
+			case '1Б': return CreateMarker(feature, latlng, style_1B);
+			case '2А': return CreateMarker(feature, latlng, style_2A);
+			case '2Б': return CreateMarker(feature, latlng, style_2B);
+			case '3А': return CreateMarker(feature, latlng, style_3A);
+			case '3Б': return CreateMarker(feature, latlng, style_3B);
+		}
+		return CreateMarker(feature, latlng, style_no);
+	}
+
+    var PassLayer = new L.GeoJSON.AJAX(pass_json, { pointToLayer: PassStyler }).addTo(mymap);  
+	</script>
+</body>
+</html>
